@@ -133,6 +133,36 @@ function getParPerMatchDay(fixtures) {
     return parMap;
 }
 
+
+function getAggregatedPar(pars) {
+    var moreExist = true
+    var aggs = {};
+    for (var i=1; moreExist===true; i++) {
+        if (pars[i]=== undefined) {
+            moreExist = false;
+        } else {
+
+            for (var team in pars[i]) {
+                var prev = 0;
+                if (aggs[i-1] !== undefined && aggs[i-1][team] !== undefined) {
+                    prev = aggs[i-1][team]
+                }
+                var curr = pars[i][team];
+                curr = curr + prev;
+                if (aggs[i]=== undefined) {
+                    aggs[i] = {};
+                }
+                var aggCurr = aggs[i];
+                aggCurr[team] = curr;
+                aggs[i] = aggCurr;
+            }
+        }
+    }
+
+    return aggs;
+
+}
+
 export function getSeason(seasonId) {
    
     return new Promise (
@@ -150,7 +180,7 @@ export function getSeason(seasonId) {
                         var tt = JSON.parse(data2);
 
                         var parMap = getParPerMatchDay(tt.fixtures);
-                        resolve(parMap);
+                        resolve(getAggregatedPar(parMap));
                     });
                 });
             });

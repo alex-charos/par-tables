@@ -3,9 +3,9 @@ const ngRoute = require('angular-route');
 import routing from './main.routes';
 
 export class MainController {
-  awesomeThings = [];
+  pars = {};
   newThing = '';
-
+  lastPar = {};
   /*@ngInject*/
   constructor($http, $scope, socket) {
     this.$http = $http;
@@ -17,25 +17,21 @@ export class MainController {
   }
 
   $onInit() {
-    this.$http.get('/api/things')
+    this.$http.get('/api/seasons')
       .then(response => {
-        this.awesomeThings = response.data;
-        this.socket.syncUpdates('thing', this.awesomeThings);
+        this.pars = response.data; 
+        var maxKey = -1;
+        var maxPar = {};
+        for (key in this.pars) {
+          if (key > maxKey) {
+            maxKey = key;
+            maxPar = this.pars[key];
+          }
+        }
+        this.lastPar = maxPar;
       });
   }
-
-  addThing() {
-    if(this.newThing) {
-      this.$http.post('/api/things', {
-        name: this.newThing
-      });
-      this.newThing = '';
-    }
-  }
-
-  deleteThing(thing) {
-    this.$http.delete(`/api/things/${thing._id}`);
-  }
+ 
 }
 
 export default angular.module('parTablesApp.main', [ngRoute])
