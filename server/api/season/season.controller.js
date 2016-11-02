@@ -12,8 +12,10 @@
 
 import jsonpatch from 'fast-json-patch';
 import Season from './season.model';
+import {getSeason} from './season.rest-calls';
 
 function respondWithResult(res, statusCode) {
+  console.log('tres');
   statusCode = statusCode || 200;
   return function(entity) {
     if(entity) {
@@ -65,9 +67,11 @@ function handleError(res, statusCode) {
 
 // Gets a list of Seasons
 export function index(req, res) {
-  return Season.find().exec()
-    .then(respondWithResult(res))
-    .catch(handleError(res));
+ return getSeason(426)
+       .then(respondWithResult(res));
+ // return Season.find().exec()
+  //  .then(respondWithResult(res))
+   //.catch(handleError(res));
 }
 
 // Gets a single Season from the DB

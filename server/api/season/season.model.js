@@ -4,8 +4,7 @@ import mongoose from 'mongoose';
 
 var TeamSchema = new mongoose.Schema({
 	name:String,
-	emblem: String,
-	lastYearPosition: Number
+	emblem: String
 
 });
 
