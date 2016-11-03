@@ -10,7 +10,8 @@ export class MainController {
   lastPar = [];
   matchDays = [];
   chartJson = {};
-
+  series = [];
+  teamsInterested = ['Leicester City FC', 'Everton FC','Tottenham Hotspur FC','Arsenal FC', 'Liverpool FC','Manchester City FC','Manchester United FC','Chelsea FC'];
   /*@ngInject*/
   constructor($http, $scope, socket) {
     this.$http = $http;
@@ -23,90 +24,118 @@ export class MainController {
   plotTable() {
     this.chartJson  = {
     title: {
-      text: "Par Table",
+      text: "Points to Target Comparison",
       fontSize: 16,
-      fontColor: "#fff"
+      fontColor: "black"
     },
-    backgroundColor: "#2bbb9a",
+    backgroundColor: "white",
     globals: {
       shadow: false,
       fontFamily: "Arial"
     },
     type: "line",
+    legend: {},
     scaleX: {
-        
+      label: {text:"Match Day"},
       maxItems: 40,
-      lineColor: "white",
+      lineColor: "black",
       lineWidth: "1px",
       values : this.matchDays,
       tick: {
-        lineColor: "white",
+        lineColor: "black",
         lineWidth: "1px"
       },
       item: {
-        fontColor: "white"
+        fontColor: "black"
       },
       guide: {
-        visible: false
+        visible: false,
+
       }
     },
-    scaleY: {
-      lineColor: "white",
+    scaleY2: {
+      lineColor: "black",
       lineWidth: "1px",
+        "values":"-12:7:1",
+
       tick: {
-        lineColor: "white",
+        lineColor: "black",
+        lineWidth: "1px"
+      },
+      guide: {
+        lineStyle: "dotted",
+        lineColor: "black"
+      },
+      item: {
+        fontColor: "black"
+      },
+    },
+    scaleY: {
+        label: {text:"Actual Points minus Target Points"},
+      lineColor: "black",
+      lineWidth: "1px",
+        "values":"-12:7:1",
+
+      tick: {
+        lineColor: "black",
         lineWidth: "1px"
       },
       guide: {
         lineStyle: "solid",
-        lineColor: "#249178"
+        lineColor: "grey"
       },
       item: {
-        fontColor: "white"
+        fontColor: "black"
       },
     },
     tooltip: {
-      visible: false
+      visible: true 
     },
-    crosshairX: {
-      lineColor: "#fff",
-      scaleLabel: {
-        backgroundColor: "#fff",
-        fontColor: "#323232"
-      },
-      plotLabel: {
-        backgroundColor: "#fff",
-        fontColor: "#323232",
-        text: "%v",
+    plot: {
+        "tooltip":{
+            "text":"%t<br>%v"
+        },
+      lineWidth: "4px", 
+      aspect: "spline",
+      marker: {
+        size:6,
+        visible: true,
         borderColor: "transparent"
       }
     },
-    plot: {
-      lineWidth: "2px", 
-      aspect: "spline",
-      marker: {
-        visible: false
-      }
-    },
-    series: [{
+    series: this.series
+  };
+  }
+  /*
+[{
       values: [0,1,2,3,23],
        "line-color":"black" 
     },{
       values: [3,4,1,44,232]
     }]
-  };
-  }
-
+  */
   $onInit() {
     this.$http.get('/api/seasons')
       .then(response => {
                 
         this.pars = response.data; 
-        var tmpMatchDays = [];
+        var tmpMatchDays = [0];
         var maxKey = -1;
         var maxPar = {};
+
+        var seriesMap =  {} ;
         for (var key in this.pars) {
-          tmpMatchDays.push(parseInt(key));
+            tmpMatchDays.push(parseInt(key));
+            for (var team in this.pars[key]) {
+                if (this.teamsInterested.indexOf(team) >-1) {
+                    if (seriesMap[team]=== undefined) {
+                        seriesMap[team] = [0];
+                    }
+                    seriesMap[team].push(this.pars[key][team]);
+                }
+            }
+
+
           if (parseInt(key) > parseInt(maxKey)) {
             maxKey = key;
             maxPar = this.pars[key];
@@ -117,15 +146,22 @@ export class MainController {
             return a > b;
         });
         this.matchDays = tmpMatchDays;
-        console.log(this.matchDays);
+        
         var parArr = [];
         for (var key in maxPar) {
           var parObj = {team:key, par:maxPar[key]};
           parArr.push(parObj);
         }
         
+        var seriesArray = [];
+        for (var key in seriesMap) {
+            seriesArray.push( 
+                            {values: seriesMap[key],
+                            text: key
+                             });
+        }
         this.lastPar = parArr;
-        
+        this.series = seriesArray;
         this.plotTable();
 
 
