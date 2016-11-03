@@ -50,7 +50,8 @@ module.exports = function makeWebpackConfig(options) {
                 'angular-sanitize',
                 'angular-socket-io',
                 'angular-ui-bootstrap',
-
+                'zingchart',
+                'zingchart-angularjs',
                 'lodash'
             ]
         };

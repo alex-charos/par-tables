@@ -11,7 +11,7 @@ const ngRoute = require('angular-route');
 import uiBootstrap from 'angular-ui-bootstrap';
 // import ngMessages from 'angular-messages';
 // import ngValidationMatch from 'angular-validation-match';
-
+import 'zingchart-angularjs';// from 'zingchart-angularjs';
 
 import {
   routeConfig
@@ -27,10 +27,10 @@ import constants from './app.constants';
 import util from '../components/util/util.module';
 import socket from '../components/socket/socket.service';
 
-import './app.scss';
+import './app.scss'; 
 
 angular.module('parTablesApp', [ngCookies, ngResource, ngSanitize, 'btford.socket-io', ngRoute,
-  uiBootstrap, _Auth, account, admin, navbar, footer, main, constants, socket, util
+  uiBootstrap, _Auth, account, admin,'zingchart-angularjs', navbar, footer, main, constants, socket, util
 ])
   .config(routeConfig)
   .run(function($rootScope, $location, Auth) {

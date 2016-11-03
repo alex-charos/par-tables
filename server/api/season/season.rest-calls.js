@@ -24,8 +24,6 @@ function get(path) {
             };
 
             http.request(options, function(res) {
-                console.log('STATUS: ' + res.statusCode);
-                console.log('HEADERS: ' + JSON.stringify(res.headers));
                 res.setEncoding('utf8');
                 var d='';
                 res.on('data', function (chunk) {
@@ -116,8 +114,6 @@ function getParPerMatchDay(fixtures) {
     for (var i = 0; i<fixtures.length;i++) {
         var fixture = fixtures[i];
         if (fixture.status ==="FINISHED") {
-            console.log(fixture.homeTeamName + ' vs ' + fixture.awayTeamName +' @ ' + fixture.date );
-            console.log(fixture.result.goalsHomeTeam + ' : ' + fixture.result.goalsAwayTeam);
             var parPointsHome = getParPoints(fixture.awayTeamName, true,fixture.result.goalsHomeTeam,fixture.result.goalsAwayTeam);
             var parPointsAway = getParPoints(fixture.homeTeamName, false,fixture.result.goalsHomeTeam,fixture.result.goalsAwayTeam);
             if (parMap[fixture.matchday]=== undefined) {
@@ -172,7 +168,7 @@ export function getSeason(seasonId) {
                 .then(function(data) {
                     var t = JSON.parse(data);
                     season = t;
-                    console.log(season);
+                    
                     get(seasonId+'/fixtures')
                     .then(function (data2) {
                         
