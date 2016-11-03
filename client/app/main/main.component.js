@@ -11,6 +11,7 @@ export class MainController {
   matchDays = [];
   chartJson = {};
   series = [];
+  teams = [];
   teamsInterested = ['Leicester City FC', 'Everton FC','Tottenham Hotspur FC','Arsenal FC', 'Liverpool FC','Manchester City FC','Manchester United FC','Chelsea FC'];
   /*@ngInject*/
   constructor($http, $scope, socket) {
@@ -106,15 +107,29 @@ export class MainController {
     series: this.series
   };
   }
-  /*
-[{
-      values: [0,1,2,3,23],
-       "line-color":"black" 
-    },{
-      values: [3,4,1,44,232]
-    }]
-  */
+ 
+  getTeamByName(name) {
+    for (var i =0; i <this.teams.length; i++) {
+        if (this.teams[i].name === name) {
+            return this.teams[i];
+        }
+    }
+
+    return {name:name};
+  }
+
+
   $onInit() {
+    this.$http.get('/api/teams')
+      .then(response => {
+                
+        this.teams = response.data; 
+
+        this.getPars();
+      });
+    
+  }
+  getPars() {
     this.$http.get('/api/seasons')
       .then(response => {
                 
@@ -134,13 +149,12 @@ export class MainController {
                     seriesMap[team].push(this.pars[key][team]);
                 }
             }
-
-
-          if (parseInt(key) > parseInt(maxKey)) {
+         if (parseInt(key) > parseInt(maxKey)) {
             maxKey = key;
             maxPar = this.pars[key];
           }
         }
+
 
         tmpMatchDays.sort(function(a,b) {
             return a > b;
@@ -149,16 +163,31 @@ export class MainController {
         
         var parArr = [];
         for (var key in maxPar) {
-          var parObj = {team:key, par:maxPar[key]};
-          parArr.push(parObj);
+            var team = this.getTeamByName(key);
+            var parObj = {team:team, par:maxPar[key]};
+            parArr.push(parObj);
         }
-        
+        parArr.sort(function(a,b) {
+            if (a.par === b.par) {
+                return a.team.name > b.team.name;
+            }
+            return a.par < b.par;
+        });
+        var sortedPar = parArr;
         var seriesArray = [];
-        for (var key in seriesMap) {
-            seriesArray.push( 
-                            {values: seriesMap[key],
-                            text: key
-                             });
+        for (var i =0; i < sortedPar.length; i++) {
+            for (var key in seriesMap) {
+                if (key === sortedPar[i].team.name) {
+                    var team = this.getTeamByName(key)
+                    var color = team.color;
+                    seriesArray.push( 
+                                    {values: seriesMap[key],
+                                    text: key,
+                                    "lineColor":color,
+                                    "marker": {backgroundColor: color}
+                                     });
+                }
+            }
         }
         this.lastPar = parArr;
         this.series = seriesArray;
@@ -166,6 +195,8 @@ export class MainController {
 
 
       });
+
+
   }
  
 }

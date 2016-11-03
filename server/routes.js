@@ -13,6 +13,7 @@ export default function(app) {
   app.use('/api/users', require('./api/user'));
   app.use('/api/seasons', require('./api/season'));
   app.use('/api/par', require('./api/par'));
+  app.use('/api/teams', require('./api/team'));
 
   app.use('/auth', require('./auth').default);
 

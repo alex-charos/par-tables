@@ -11,17 +11,13 @@
 'use strict';
 
 import jsonpatch from 'fast-json-patch';
-import Season from './season.model';
-import {getSeason} from './season.rest-calls';
+import {getTeams} from './team.rest-calls';
 
-var season = 426;
-var stored = undefined;
 function respondWithResult(res, statusCode) {
-  
+  console.log('tres');
   statusCode = statusCode || 200;
   return function(entity) {
     if(entity) {
-      stored = entity;
       return res.status(statusCode).json(entity);
     }
     return null;
@@ -68,60 +64,12 @@ function handleError(res, statusCode) {
   };
 }
 
-// Gets a list of Seasons
+// Gets a list of Teams
 export function index(req, res) {
-  
-      return getSeason(season)
+ return getTeams(426)
        .then(respondWithResult(res));
-      
- 
  // return Season.find().exec()
   //  .then(respondWithResult(res))
    //.catch(handleError(res));
 }
 
-// Gets a single Season from the DB
-export function show(req, res) {
-  return Season.findById(req.params.id).exec()
-    .then(handleEntityNotFound(res))
-    .then(respondWithResult(res))
-    .catch(handleError(res));
-}
-
-// Creates a new Season in the DB
-export function create(req, res) {
-  return Season.create(req.body)
-    .then(respondWithResult(res, 201))
-    .catch(handleError(res));
-}
-
-// Upserts the given Season in the DB at the specified ID
-export function upsert(req, res) {
-  if(req.body._id) {
-    delete req.body._id;
-  }
-  return Season.findOneAndUpdate({_id: req.params.id}, req.body, {upsert: true, setDefaultsOnInsert: true, runValidators: true}).exec()
-
-    .then(respondWithResult(res))
-    .catch(handleError(res));
-}
-
-// Updates an existing Season in the DB
-export function patch(req, res) {
-  if(req.body._id) {
-    delete req.body._id;
-  }
-  return Season.findById(req.params.id).exec()
-    .then(handleEntityNotFound(res))
-    .then(patchUpdates(req.body))
-    .then(respondWithResult(res))
-    .catch(handleError(res));
-}
-
-// Deletes a Season from the DB
-export function destroy(req, res) {
-  return Season.findById(req.params.id).exec()
-    .then(handleEntityNotFound(res))
-    .then(removeEntity(res))
-    .catch(handleError(res));
-}
