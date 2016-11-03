@@ -8,10 +8,22 @@ export class MainController {
   pars = {};
   newThing = '';
   lastPar = [];
+  matchDays = [];
+  chartJson = {};
 
-  chartJson  = {
+  /*@ngInject*/
+  constructor($http, $scope, socket) {
+    this.$http = $http;
+    this.socket = socket;
+    $scope.$on('$destroy', function() {
+      socket.unsyncUpdates('thing');
+    });
+  }
+
+  plotTable() {
+    this.chartJson  = {
     title: {
-      text: "Outgoing transactions",
+      text: "Par Table",
       fontSize: 16,
       fontColor: "#fff"
     },
@@ -22,13 +34,11 @@ export class MainController {
     },
     type: "line",
     scaleX: {
-       transform: {
-              type: 'date'
-          },
+        
       maxItems: 40,
       lineColor: "white",
       lineWidth: "1px",
-      values : [0,2,3,4,5,100],
+      values : this.matchDays,
       tick: {
         lineColor: "white",
         lineWidth: "1px"
@@ -72,25 +82,19 @@ export class MainController {
       }
     },
     plot: {
-      lineWidth: "2px",
-      lineColor: "#FFF",
+      lineWidth: "2px", 
       aspect: "spline",
       marker: {
         visible: false
       }
     },
     series: [{
-      values: [0,1,2,3]
+      values: [0,1,2,3,23],
+       "line-color":"black" 
+    },{
+      values: [3,4,1,44,232]
     }]
   };
-
-  /*@ngInject*/
-  constructor($http, $scope, socket) {
-    this.$http = $http;
-    this.socket = socket;
-    $scope.$on('$destroy', function() {
-      socket.unsyncUpdates('thing');
-    });
   }
 
   $onInit() {
@@ -98,16 +102,22 @@ export class MainController {
       .then(response => {
                 
         this.pars = response.data; 
-              
+        var tmpMatchDays = [];
         var maxKey = -1;
         var maxPar = {};
         for (var key in this.pars) {
-          
+          tmpMatchDays.push(parseInt(key));
           if (parseInt(key) > parseInt(maxKey)) {
             maxKey = key;
             maxPar = this.pars[key];
           }
         }
+
+        tmpMatchDays.sort(function(a,b) {
+            return a > b;
+        });
+        this.matchDays = tmpMatchDays;
+        console.log(this.matchDays);
         var parArr = [];
         for (var key in maxPar) {
           var parObj = {team:key, par:maxPar[key]};
@@ -115,6 +125,10 @@ export class MainController {
         }
         
         this.lastPar = parArr;
+        
+        this.plotTable();
+
+
       });
   }
  
