@@ -11,9 +11,10 @@ export default function(app) {
   // Insert routes below
   app.use('/api/things', require('./api/thing'));
   app.use('/api/users', require('./api/user'));
+  app.use('/api/teams', require('./api/team'));
   app.use('/api/seasons', require('./api/season'));
   app.use('/api/par', require('./api/par'));
-  app.use('/api/teams', require('./api/team'));
+ 
 
   app.use('/auth', require('./auth').default);
 

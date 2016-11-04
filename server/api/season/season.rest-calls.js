@@ -10,7 +10,7 @@ var host = 'api.football-data.org';
 var rootPath ='/v1/soccerseasons/';
 var token = '79e23fafd923491b91572cde3c9d41e3';
 
-
+var parsStored = undefined;
 
 function get(path) {
      
@@ -39,7 +39,7 @@ function get(path) {
 
 
 
-function getTeamPosition(teamName) {
+export function getTeamPosition(teamName) {
     var tp = {
         'Hull City FC'              :20,
         'Leicester City FC'         : 1,
@@ -160,24 +160,25 @@ function getAggregatedPar(pars) {
 }
 
 export function getSeason(seasonId) {
-   
-    return new Promise (
-            function (resolve, reject) {
-                var season = {};
-                get(seasonId)
-                .then(function(data) {
-                    var t = JSON.parse(data);
-                    season = t;
-                    
-                    get(seasonId+'/fixtures')
-                    .then(function (data2) {
+        return new Promise (
+                function (resolve, reject) {
+                    var season = {};
+                    get(seasonId)
+                    .then(function(data) {
+                        var t = JSON.parse(data);
+                        season = t;
                         
+                        get(seasonId+'/fixtures')
+                        .then(function (data2) {
+                            
 
-                        var tt = JSON.parse(data2);
+                            var tt = JSON.parse(data2);
 
-                        var parMap = getParPerMatchDay(tt.fixtures);
-                        resolve(getAggregatedPar(parMap));
+                            var parMap = getParPerMatchDay(tt.fixtures);
+                            var aggs = getAggregatedPar(parMap)
+                            resolve(aggs);
+                        });
                     });
                 });
-            });
+  
 }

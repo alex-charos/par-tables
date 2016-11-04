@@ -1,16 +1,16 @@
 'use strict';
 
-import mongoose from 'mongoose';
-
-var TeamSchema = new mongoose.Schema({
-	name:String,
-	emblem: String
-
-});
+import mongoose from 'mongoose'; 
 
 var FixtureSchema = new mongoose.Schema({
-	homeTeam: TeamSchema,
-	awayTeam: TeamSchema,
+	homeTeam: {
+	        type: mongoose.Schema.ObjectId,
+	        ref: 'Team'
+   	 },
+	awayTeam:  {
+	        type: mongoose.Schema.ObjectId,
+	        ref: 'Team'
+   	 },
 	kickOff: Date,
 	homeScore: Number,
 	awayScore: Number

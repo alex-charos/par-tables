@@ -1,5 +1,5 @@
 
-
+/*
 function getTeamPosition(teamName) {
     var tp = {
         'Hull City FC'              :20,
@@ -120,4 +120,4 @@ function getAggregatedPar(pars) {
 
     return aggs;
 
-}
+}*/

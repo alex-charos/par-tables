@@ -12,6 +12,7 @@
 
 import jsonpatch from 'fast-json-patch';
 import {getTeams} from './team.rest-calls';
+import Team from '../team/team.model';
 
 function respondWithResult(res, statusCode) {
   console.log('tres');
@@ -66,8 +67,7 @@ function handleError(res, statusCode) {
 
 // Gets a list of Teams
 export function index(req, res) {
- return getTeams(426)
-       .then(respondWithResult(res));
+ return Team.find({}).then(respondWithResult(res));
  // return Season.find().exec()
   //  .then(respondWithResult(res))
    //.catch(handleError(res));

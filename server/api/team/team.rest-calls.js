@@ -1,5 +1,8 @@
 //import Par from './par.model';
 
+import {getTeamPosition} from '../season/season.rest-calls';
+
+import Team from '../team/team.model';
 
 var http = require('http');
 var Promise = require('es6-promise').Promise
@@ -10,7 +13,7 @@ var host = 'api.football-data.org';
 var rootPath ='/v1/soccerseasons/';
 var token = '79e23fafd923491b91572cde3c9d41e3';
 
-
+var teamsStored = undefined;
 
 function get(path) {
      
@@ -68,38 +71,42 @@ function getColourByTeam(team) {
 }
 
 export function getTeams(seasonId) {
-   
+
     return new Promise (
-            function (resolve, reject) {
+
+
+           function (resolve, reject) {
                 var season = {};
                 get(seasonId)
                 .then(function(data) {
                     var t = JSON.parse(data);
                     season = t;
-                    
                     get(seasonId+'/teams')
                     .then(function (data2) {
-                       
+
                         var teams = [];
                         var tt = JSON.parse(data2);
 
                         for (var i =0; i < tt.teams.length; i++) {
-                            console.log(i);
                             var color = getColourByTeam(tt.teams[i].name);
+                            var pos  = getTeamPosition(tt.teams[i].name)
                             teams.push({
                                 name        : tt.teams[i].name,
                                 code        : tt.teams[i].code,
                                 shortName   : tt.teams[i].shortName,
                                 badge       : tt.teams[i].crestUrl,
-                                color       : color
+                                color       : color,
+                                rank        : pos
                             });
                             
                             
                                
                         }
-                        console.log(teams);
+                        console.log('retrieved teams via REST');
+                        teamsStored = teams;
                         resolve(teams);
                     });
                 });
             });
+ 
 }
