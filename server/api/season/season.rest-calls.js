@@ -1,5 +1,6 @@
 //import Par from './par.model';
 
+import Team from '../team/team.model';
 
 var http = require('http');
 var Promise = require('es6-promise').Promise
@@ -39,36 +40,8 @@ function get(path) {
 
 
 
-export function getTeamPosition(teamName) {
-    var tp = {
-        'Hull City FC'              :20,
-        'Leicester City FC'         : 1,
-        'Southampton FC'            : 6,
-        'Watford FC'                :13,
-        'Middlesbrough FC'          :18,
-        'Stoke City FC'             : 9,
-        'Everton FC'                :11,
-        'Tottenham Hotspur FC'      : 3,
-        'Crystal Palace FC'         :15,
-        'West Bromwich Albion FC'   :14,
-        'Burnley FC'                :19,
-        'Swansea City FC'           :12,
-        'Manchester City FC'        : 4,
-        'Sunderland AFC'            :17,
-        'AFC Bournemouth'           :16,
-        'Manchester United FC'      : 5,
-        'Arsenal FC'                : 2,
-        'Liverpool FC'              : 8,
-        'Chelsea FC'                :10,
-        'West Ham United FC'        : 7
-
-    };
-
-    return tp[teamName];
-}
-
-function getParPoints(teamName, atHome,homeScore,awayScore) {
-    var position = getTeamPosition(teamName);
+function getParPoints(position, atHome,homeScore,awayScore) {
+    
     var parPoints = 0;
     if (atHome) {
         if (homeScore > awayScore) {
@@ -107,28 +80,60 @@ function getParPoints(teamName, atHome,homeScore,awayScore) {
 }
 
 function getParPerMatchDay(fixtures) {
-    var parMap ={};
+    var promiseArr = [];
+   
     fixtures.sort(function(a,b) {
         return  Date.parse(a.date) > Date.parse(b.date);
     });
     for (var i = 0; i<fixtures.length;i++) {
-        var fixture = fixtures[i];
-        if (fixture.status ==="FINISHED") {
-            var parPointsHome = getParPoints(fixture.awayTeamName, true,fixture.result.goalsHomeTeam,fixture.result.goalsAwayTeam);
-            var parPointsAway = getParPoints(fixture.homeTeamName, false,fixture.result.goalsHomeTeam,fixture.result.goalsAwayTeam);
-            if (parMap[fixture.matchday]=== undefined) {
-                parMap[fixture.matchday] = {};
-            }
-            var obj =  parMap[fixture.matchday];
-            obj[fixture.homeTeamName] = parPointsHome;
-            obj[fixture.awayTeamName] = parPointsAway;
-            parMap[fixture.matchday] = obj;
+        
+        if (fixtures[i].result.goalsHomeTeam !==null 
+                &&  fixtures[i].result.goalsAwayTeam!==null) {
+            var p = new Promise(
+                function (resolve, reject) {
+                    var fixture = fixtures[i];
+                    Team.find({name:fixture.homeTeamName})
+                    .then(function(homeTeam) {
+                        Team.find({name:fixture.awayTeamName})
+                        .then(function(awayTeam) {
+                            fixture.homeTeam = homeTeam[0];
+                            fixture.awayTeam = awayTeam[0];
+                            var parPointsHome = getParPoints(fixture.awayTeam.rank, true,fixture.result.goalsHomeTeam,fixture.result.goalsAwayTeam);
+                            var parPointsAway = getParPoints(fixture.homeTeam.rank, false,fixture.result.goalsHomeTeam,fixture.result.goalsAwayTeam);
+                            
+                            var obj = {};
+                            obj.homeTeam = fixture.homeTeam;
+                            obj.awayTeam = fixture.awayTeam;
+                            obj.homePar = parPointsHome;
+                            obj.awayPar = parPointsAway;
+                            obj.matchday = fixture.matchday;
+                            resolve(obj);
+                        });
+                    });
+                }
+            );
+            promiseArr.push(p);
         }
     }
 
-    return parMap;
-}
+return new Promise( 
+    function (resolve, reject) {
+        Promise.all(promiseArr).then(values => { 
+            var parMap ={};
+            for (var i =0; i < values.length; i++) {
+                if (parMap[values[i].matchday]=== undefined) {
+                    parMap[values[i].matchday] = {};
+                }
+                var obj =  parMap[values[i].matchday];
+                obj[values[i].homeTeam.name] = values[i].homePar;
+                obj[values[i].awayTeam.name] = values[i].awayPar;
+                parMap[values[i].matchday] = obj;
+            }
+            resolve(parMap) ;
+        });
 
+    });
+} 
 
 function getAggregatedPar(pars) {
     var moreExist = true
@@ -174,9 +179,12 @@ export function getSeason(seasonId) {
 
                             var tt = JSON.parse(data2);
 
-                            var parMap = getParPerMatchDay(tt.fixtures);
-                            var aggs = getAggregatedPar(parMap)
-                            resolve(aggs);
+                            getParPerMatchDay(tt.fixtures).then(function(parMap) {
+                                    var aggs = getAggregatedPar(parMap)
+                                    resolve(aggs);
+                                     
+                                });
+                           
                         });
                     });
                 });

@@ -9,19 +9,14 @@ import User from '../api/user/user.model';
 import {getTeams} from '../api/team/team.rest-calls';
 
 Team.find({}).then(function(data) {
-  console.log('Checked existing teams');
-  if (data.length == 0) {
-    console.log('Teams empty. Retrieving');
-    getTeams(426).then(function(teams) {
-      Team.create(teams);
-      
-
+    console.log('Checking existing teams');
+        if (data.length == 0) {
+            console.log('Teams empty. Retrieving');
+            getTeams(426).then(function(teams) {
+                Team.create(teams);
+            });
+        }
     });
-  }
-  
-
-
-})
 
 User.find({}).remove()
   .then(() => {

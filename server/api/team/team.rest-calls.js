@@ -1,8 +1,5 @@
 //import Par from './par.model';
 
-import {getTeamPosition} from '../season/season.rest-calls';
-
-import Team from '../team/team.model';
 
 var http = require('http');
 var Promise = require('es6-promise').Promise
@@ -13,7 +10,35 @@ var host = 'api.football-data.org';
 var rootPath ='/v1/soccerseasons/';
 var token = '79e23fafd923491b91572cde3c9d41e3';
 
-var teamsStored = undefined;
+
+
+export function getTeamPosition(teamName) {
+    var tp = {
+        'Hull City FC'              :20,
+        'Leicester City FC'         : 1,
+        'Southampton FC'            : 6,
+        'Watford FC'                :13,
+        'Middlesbrough FC'          :18,
+        'Stoke City FC'             : 9,
+        'Everton FC'                :11,
+        'Tottenham Hotspur FC'      : 3,
+        'Crystal Palace FC'         :15,
+        'West Bromwich Albion FC'   :14,
+        'Burnley FC'                :19,
+        'Swansea City FC'           :12,
+        'Manchester City FC'        : 4,
+        'Sunderland AFC'            :17,
+        'AFC Bournemouth'           :16,
+        'Manchester United FC'      : 5,
+        'Arsenal FC'                : 2,
+        'Liverpool FC'              : 8,
+        'Chelsea FC'                :10,
+        'West Ham United FC'        : 7
+
+    };
+
+    return tp[teamName];
+}
 
 function get(path) {
      
@@ -102,8 +127,6 @@ export function getTeams(seasonId) {
                             
                                
                         }
-                        console.log('retrieved teams via REST');
-                        teamsStored = teams;
                         resolve(teams);
                     });
                 });
