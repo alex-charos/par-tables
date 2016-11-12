@@ -1,35 +1,17 @@
+//import Par from './par.model';
 
-/*
-function getTeamPosition(teamName) {
-    var tp = {
-        'Hull City FC'              :20,
-        'Leicester City FC'         : 1,
-        'Southampton FC'            : 6,
-        'Watford FC'                :13,
-        'Middlesbrough FC'          :18,
-        'Stoke City FC'             : 9,
-        'Everton FC'                :11,
-        'Tottenham Hotspur FC'      : 3,
-        'Crystal Palace FC'         :15,
-        'West Bromwich Albion FC'   :14,
-        'Burnley FC'                :19,
-        'Swansea City FC'           :12,
-        'Manchester City FC'        : 4,
-        'Sunderland AFC'            :17,
-        'AFC Bournemouth'           :16,
-        'Manchester United FC'      : 5,
-        'Arsenal FC'                : 2,
-        'Liverpool FC'              : 8,
-        'Chelsea FC'                :10,
-        'West Ham United FC'        : 7
+import Team from '../team/team.model';
+import Par from '../par/par.model';
+import Season from '../season/season.model';
+import Fixture from '../season/fixture.model';
 
-    };
+var http = require('http');
+var Promise = require('es6-promise').Promise
+  , state = {}
+  ;
 
-    return tp[teamName];
-}
-
-function getParPoints(teamName, atHome,homeScore,awayScore) {
-    var position = getTeamPosition(teamName);
+function getParPoints(position, atHome,homeScore,awayScore) {
+    
     var parPoints = 0;
     if (atHome) {
         if (homeScore > awayScore) {
@@ -68,56 +50,128 @@ function getParPoints(teamName, atHome,homeScore,awayScore) {
 }
 
 function getParPerMatchDay(fixtures) {
-    var parMap ={};
+    var promiseArr = [];
     fixtures.sort(function(a,b) {
-        return  Date.parse(a.date) > Date.parse(b.date);
+        return  Date.parse(a.kickOff) > Date.parse(b.kickOff);
     });
-    for (var i = 0; i<fixtures.length;i++) {
-        var fixture = fixtures[i];
-        if (fixture.status ==="FINISHED") {
-            console.log(fixture.homeTeamName + ' vs ' + fixture.awayTeamName +' @ ' + fixture.date );
-            console.log(fixture.result.goalsHomeTeam + ' : ' + fixture.result.goalsAwayTeam);
-            var parPointsHome = getParPoints(fixture.awayTeamName, true,fixture.result.goalsHomeTeam,fixture.result.goalsAwayTeam);
-            var parPointsAway = getParPoints(fixture.homeTeamName, false,fixture.result.goalsHomeTeam,fixture.result.goalsAwayTeam);
-            if (parMap[fixture.matchday]=== undefined) {
-                parMap[fixture.matchday] = {};
-            }
-            var obj =  parMap[fixture.matchday];
-            obj[fixture.homeTeamName] = parPointsHome;
-            obj[fixture.awayTeamName] = parPointsAway;
-            parMap[fixture.matchday] = obj;
+            
+
+     for (var i = 0; i<fixtures.length;i++) {
+        
+        if (fixtures[i].homeScore !==null 
+                &&  fixtures[i].awayScore!=null) {
+
+            var p = new Promise(
+                function (resolve, reject) {
+                    var fixture = fixtures[i];
+                    Team.find({_id:fixture.homeTeam})
+                    .then(function(homeTeam) {
+                        Team.find({_id:fixture.awayTeam})
+                        .then(function(awayTeam) {
+                        
+                            fixture.homeTeam = homeTeam[0];
+                            fixture.awayTeam = awayTeam[0];
+                            var parPointsHome = getParPoints(fixture.awayTeam.rank, true,fixture.homeScore,fixture.awayScore);
+                            var parPointsAway = getParPoints(fixture.homeTeam.rank, false,fixture.homeScore,fixture.awayScore);
+                            
+                            var obj = {};
+                            obj.homeTeam = fixture.homeTeam;
+                            obj.awayTeam = fixture.awayTeam;
+                            obj.homePar = parPointsHome;
+                            obj.awayPar = parPointsAway;
+                            obj.matchday = fixture.matchday;
+                            resolve(obj);
+                        });
+                    });
+                }
+            );
+            promiseArr.push(p);
         }
     }
 
-    return parMap;
-}
+    return new Promise( 
+        function (resolve, reject) {
+            Promise.all(promiseArr).then(values => { 
+                var parMap ={};
+                for (var i =0; i < values.length; i++) {
+                    if (parMap[values[i].matchday]=== undefined) {
+                        parMap[values[i].matchday] = {};
+                    }
+                    var obj =  parMap[values[i].matchday];
+                    if (obj.pars === undefined) {
+                        obj.pars = [];
+                    }
+                    //obj[values[i].homeTeam.name] = values[i].homePar;
+                    //obj[values[i].awayTeam.name] = values[i].awayPar;
+                    obj.matchday = values[i].matchday;
+                    obj.pars.push({team:values[i].homeTeam.name, par: values[i].homePar});
+                    obj.pars.push({team:values[i].awayTeam.name, par: values[i].awayPar});
+                    parMap[values[i].matchday] = obj;
+                }
+                //console.log(parMap);
+                var arr=[];
+                for (var key in parMap) {
+                    console.log('parmapkey');
+                    console.log(parMap[key]);
+                    arr.push(parMap[key]);
+                    console.log('arrgeti');
+                    console.log(arr[arr.length-1]);
+                    
 
+                }
+                console.log('arr');
+                console.log(arr);
+                resolve(arr) ;
+            });
+
+        });
+} 
 
 function getAggregatedPar(pars) {
+    
     var moreExist = true
     var aggs = {};
-    for (var i=1; moreExist===true; i++) {
-        if (pars[i]=== undefined) {
-            moreExist = false;
-        } else {
+    var mapPars = {};
+    pars.sort(function(a,b) {
+        return a.matchday > b.matchday;
+    });
+    var prevP = pars[0];
 
-            for (var team in pars[i]) {
-                var prev = 0;
-                if (aggs[i-1] !== undefined && aggs[i-1][team] !== undefined) {
-                    prev = aggs[i-1][team]
+    for (var i = 1; i < pars.length; i++) {
+        for (var j =0 ; j < pars[i].pars.length; j++) {
+            for (var k =0; k < prevP.pars.length; k++) {
+                if (pars[i].pars[j].team === prevP.pars[k].team) {
+                    pars[i].pars[j].par += prevP.pars[k].par;
                 }
-                var curr = pars[i][team];
-                curr = curr + prev;
-                if (aggs[i]=== undefined) {
-                    aggs[i] = {};
-                }
-                var aggCurr = aggs[i];
-                aggCurr[team] = curr;
-                aggs[i] = aggCurr;
             }
         }
+        prevP = pars[i];
     }
+    
+    return pars;
+}
 
-    return aggs;
+export function getPars(seasonId) {
+    console.log('testsets')
+    return new Promise(
+        function (resolve, reject) {
+                    console.log('sssssss');
+                    Fixture.find({seasonId:seasonId})
+                    .then(function(fixtures) {
+                        console.log('sssss');
+                        getParPerMatchDay(fixtures).then(function(parMap) {
+                                console.log('lala');
+                              //  console.log(parMap);
+                                    var aggs = getAggregatedPar(parMap);
+                                    console.log(aggs);
+                                    resolve(aggs);
+                                     
+                                });
 
-}*/
+             });
+
+        }
+
+        );
+    
+}

@@ -12,6 +12,8 @@ export class MainController {
   chartJson = {};
   series = [];
   teams = [];
+  seasonId = 426;
+  parMapLimit = -8
   teamsInterested = ['Leicester City FC', 'Everton FC','Tottenham Hotspur FC','Arsenal FC', 'Liverpool FC','Manchester City FC','Manchester United FC','Chelsea FC'];
   /*@ngInject*/
   constructor($http, $scope, socket) {
@@ -57,7 +59,7 @@ export class MainController {
     scaleY2: {
       lineColor: "black",
       lineWidth: "1px",
-        "values":"-12:7:1",
+        "values":"-10:7:1",
 
       tick: {
         lineColor: "black",
@@ -75,7 +77,7 @@ export class MainController {
         label: {text:"Actual Points minus Target Points"},
       lineColor: "black",
       lineWidth: "1px",
-        "values":"-12:7:1",
+        "values":"-10:7:1",
 
       tick: {
         lineColor: "black",
@@ -130,7 +132,7 @@ export class MainController {
     
   }
   getPars() {
-    this.$http.get('/api/seasons')
+    this.$http.get('/api/par?seasonId='+this.seasonId)
       .then(response => {
                 
         this.pars = response.data; 
@@ -139,21 +141,33 @@ export class MainController {
         var maxPar = {};
 
         var seriesMap =  {} ;
-        for (var key in this.pars) {
-            tmpMatchDays.push(parseInt(key));
-            for (var team in this.pars[key]) {
-                if (this.teamsInterested.indexOf(team) >-1) {
+        for (var i=0; i< this.pars.length; i++) {
+            tmpMatchDays.push(parseInt(this.pars[i].matchday));
+            for (var j =0; j < this.pars[i].pars.length; j++) {
+
+              var team = this.pars[i].pars[j].team;
+              var p = this.pars[i].pars[j].par;
+                //if (this.teamsInterested.indexOf(team) >-1) {
                     if (seriesMap[team]=== undefined) {
                         seriesMap[team] = [0];
                     }
-                    seriesMap[team].push(this.pars[key][team]);
-                }
+                    seriesMap[team].push(p);
+                //}
             }
-         if (parseInt(key) > parseInt(maxKey)) {
-            maxKey = key;
-            maxPar = this.pars[key];
+         if (parseInt(this.pars[i].matchday) > parseInt(maxKey)) {
+            maxKey = this.pars[i].matchday;
+            maxPar = this.pars[i];
           }
         }
+
+        for (var team in seriesMap) {
+          console.log('comparing' + seriesMap[team][seriesMap[team].length-1] + ' with ' + this.parMapLimit);
+          if (seriesMap[team][seriesMap[team].length-1]  < this.parMapLimit) {
+            console.log('deleting');
+            delete seriesMap[team];
+          }
+        }
+                console.log(seriesMap);
 
 
         tmpMatchDays.sort(function(a,b) {
@@ -162,9 +176,9 @@ export class MainController {
         this.matchDays = tmpMatchDays;
         
         var parArr = [];
-        for (var key in maxPar) {
-            var team = this.getTeamByName(key);
-            var parObj = {team:team, par:maxPar[key]};
+        for (var i = 0; i < maxPar.pars.length; i++) {
+            var team = this.getTeamByName(maxPar.pars[i].team);
+            var parObj = {team:team, par:maxPar.pars[i].par};
             parArr.push(parObj);
         }
         parArr.sort(function(a,b) {
@@ -189,6 +203,8 @@ export class MainController {
                 }
             }
         }
+
+
         this.lastPar = parArr;
         this.series = seriesArray;
         this.plotTable();

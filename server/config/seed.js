@@ -7,6 +7,7 @@
 import Team from '../api/team/team.model';
 import User from '../api/user/user.model';
 import {getTeams} from '../api/team/team.rest-calls';
+import {getSeason} from '../api/season/season.rest-calls';
 
 Team.find({}).then(function(data) {
     console.log('Checking existing teams');
@@ -17,6 +18,7 @@ Team.find({}).then(function(data) {
             });
         }
     });
+getSeason(426);
 
 User.find({}).remove()
   .then(() => {
