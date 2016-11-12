@@ -88,19 +88,11 @@ export function getSeason(seasonId) {
                     get(seasonId)
                     .then(function(data) {
                         var t = JSON.parse(data);
-                       
-                       
-                        
                         get(seasonId+'/fixtures')
                         .then(function (data2) {
 
                             var tt = JSON.parse(data2);
                             updateFixtures(tt.fixtures,seasonId);
-                            getParPerMatchDay(tt.fixtures).then(function(parMap) {
-                                    var aggs = getAggregatedPar(parMap);
-                                    resolve(aggs);
-                                     
-                                });
                            
                         });
                     });

@@ -18,8 +18,10 @@ Team.find({}).then(function(data) {
             });
         }
     });
-getSeason(426);
 
+console.log('Loading season');
+getSeason(426);
+console.log('Season loaded');
 User.find({}).remove()
   .then(() => {
     User.create({

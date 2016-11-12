@@ -161,13 +161,10 @@ export class MainController {
         }
 
         for (var team in seriesMap) {
-          console.log('comparing' + seriesMap[team][seriesMap[team].length-1] + ' with ' + this.parMapLimit);
           if (seriesMap[team][seriesMap[team].length-1]  < this.parMapLimit) {
-            console.log('deleting');
             delete seriesMap[team];
           }
         }
-                console.log(seriesMap);
 
 
         tmpMatchDays.sort(function(a,b) {
