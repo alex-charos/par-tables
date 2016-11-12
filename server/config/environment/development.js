@@ -7,7 +7,8 @@ module.exports = {
 
   // MongoDB connection options
  mongo: {
-    uri: 'mongodb://companies:companies@ds019950.mlab.com:19950/companies'
+  uri: process.env.MONGODB_URI
+
   },
 
   // Seed database on startup

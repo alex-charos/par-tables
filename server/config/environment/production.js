@@ -15,7 +15,9 @@ module.exports = {
     || 8080,
 
   // MongoDB connection options
-  mongo: {
-    uri:   'mongodb://companies:companies@ds019950.mlab.com:19950/companies'
-  }
+ 
+   mongo: {
+     uri: process.env.MONGODB_URI
+   },
+   seedDB: true
 };

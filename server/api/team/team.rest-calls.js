@@ -1,14 +1,8 @@
-//import Par from './par.model';
-
-
-var http = require('http');
+import {get} from '../util/rest-util';
 var Promise = require('es6-promise').Promise
   , state = {}
   ;
 
-var host = 'api.football-data.org';
-var rootPath ='/v1/soccerseasons/';
-var token = '79e23fafd923491b91572cde3c9d41e3';
 
 
 
@@ -40,30 +34,7 @@ export function getTeamPosition(teamName) {
     return tp[teamName];
 }
 
-function get(path) {
-     
-    return new Promise(
-        function (resolve, reject) {
-            var options = {
-                host: host,
-                path: rootPath + path,
-                method: 'GET',
-                headers: {'X-AUTH-TOKEN': token}
-            };
 
-            http.request(options, function(res) {
-                res.setEncoding('utf8');
-                var d='';
-                res.on('data', function (chunk) {
-                    d+=chunk;
-                });
-                res.on('end', function () {
-                     resolve(d);
-                });
-            }).end();
-        });
-
-}
  
 function getColourByTeam(team) {
     var color = undefined;

@@ -4,45 +4,12 @@ import Team from '../team/team.model';
 import Par from '../par/par.model';
 import Season from '../season/season.model';
 import Fixture from '../season/fixture.model';
+import {get} from '../util/rest-util';
 
-var http = require('http');
 var Promise = require('es6-promise').Promise
   , state = {}
   ;
 var schedule = require('node-schedule');
-
-var host = 'api.football-data.org';
-var rootPath ='/v1/soccerseasons/';
-var token = '79e23fafd923491b91572cde3c9d41e3';
-
-var parsStored = undefined;
-
-function get(path) {
-     
-    return new Promise(
-        function (resolve, reject) {
-            var options = {
-                host: host,
-                path: rootPath + path,
-                method: 'GET',
-                headers: {'X-AUTH-TOKEN': token}
-            };
-
-            http.request(options, function(res) {
-                res.setEncoding('utf8');
-                var d='';
-                res.on('data', function (chunk) {
-                    d+=chunk;
-                }); 
-                res.on('end', function () {
-                     resolve(d);
-                });
-            }).end();
-        });
-
-}
-
-
 
 function updateFixtures(fixtures, seasonId) {
 
