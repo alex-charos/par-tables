@@ -72,11 +72,9 @@ function handleError(res, statusCode) {
 export function index(req, res) {
     
     var sid = req.query.seasonId;
-    console.log(sid);
     
      getPars(sid).then(function(pars) {
-            console.log('got pars');
-            console.log(res.status(200).json(pars));
+             
       return res.status(200).json(pars);
 
         });

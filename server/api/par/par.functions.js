@@ -108,19 +108,15 @@ function getParPerMatchDay(fixtures) {
                     obj.pars.push({team:values[i].awayTeam.name, par: values[i].awayPar});
                     parMap[values[i].matchday] = obj;
                 }
-                //console.log(parMap);
                 var arr=[];
                 for (var key in parMap) {
-                    console.log('parmapkey');
-                    console.log(parMap[key]);
+                   
                     arr.push(parMap[key]);
-                    console.log('arrgeti');
-                    console.log(arr[arr.length-1]);
+                    
                     
 
                 }
-                console.log('arr');
-                console.log(arr);
+
                 resolve(arr) ;
             });
 
@@ -152,18 +148,14 @@ function getAggregatedPar(pars) {
 }
 
 export function getPars(seasonId) {
-    console.log('testsets')
+
     return new Promise(
         function (resolve, reject) {
-                    console.log('sssssss');
                     Fixture.find({seasonId:seasonId})
                     .then(function(fixtures) {
-                        console.log('sssss');
                         getParPerMatchDay(fixtures).then(function(parMap) {
-                                console.log('lala');
-                              //  console.log(parMap);
+                            
                                     var aggs = getAggregatedPar(parMap);
-                                    console.log(aggs);
                                     resolve(aggs);
                                      
                                 });
