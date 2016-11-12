@@ -9,11 +9,18 @@ Compares with teams positions (currently hardcoded) and calculates pars.
 
 # Improvement / Development ideas
 User-defined standings.
+
 Odds integration.
+
 User Profile and favorite configuration
+
 Rolling table par calculation
-Externalize mongodb instance (and perhaps actually use it)
 ... many many more from RAWK
+
+# Demo
+
+Available at http://partables.herokuapp.com
+
 
 # Running the application. 
 Running `gulp serve` will start the application.
